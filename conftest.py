@@ -10,11 +10,28 @@ from helpers.data_generator import generate_courier_data
 @pytest.fixture
 def courier_data():
     """
-    Фикстура для генерации данных курьера
+    Фикстура для генерации данных курьера и удаления после теста
     
     :return: словарь с данными курьера
     """
-    return generate_courier_data()
+    data = generate_courier_data()
+    courier_id = None
+    
+    yield data
+    
+    # Пытаемся удалить курьера после теста (если он был создан)
+    try:
+        login_response = CourierAPI.login_courier({
+            "login": data["login"],
+            "password": data["password"]
+        })
+        if login_response.status_code == 200:
+            courier_id = login_response.json().get("id")
+            if courier_id:
+                with allure.step(f"Удаление тестового курьера ID: {courier_id}"):
+                    CourierAPI.delete_courier(courier_id)
+    except:
+        pass  # Игнорируем ошибки при удалении
 
 
 @pytest.fixture
@@ -77,3 +94,24 @@ def created_order():
                 OrdersAPI.cancel_order(track_number)
             except:
                 pass  # Игнорируем ошибки при удалении
+
+
+@pytest.fixture
+def order_track_cleanup():
+    """
+    Фикстура для сбора track номеров заказов и их отмены после теста
+    Использование: в тесте вызывайте order_track_cleanup.append(track_number)
+
+    :return: список для добавления track номеров
+    """
+    tracks = []
+
+    yield tracks
+
+    # Отменяем все заказы после теста
+    for track in tracks:
+        with allure.step(f"Отмена тестового заказа track: {track}"):
+            try:
+                OrdersAPI.cancel_order(track)
+            except:
+                pass  # Игнорируем ошибки при отмене

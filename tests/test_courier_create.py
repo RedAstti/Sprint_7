@@ -24,15 +24,6 @@ class TestCourierCreate:
         response_data = response.json()
         assert response_data.get("ok") is True, \
             f"Ожидалось 'ok': true, получено {response_data}"
-        
-        # Удаляем созданного курьера
-        login_response = CourierAPI.login_courier({
-            "login": courier_data["login"],
-            "password": courier_data["password"]
-        })
-        if login_response.status_code == 200:
-            courier_id = login_response.json().get("id")
-            CourierAPI.delete_courier(courier_id)
 
     @allure.title("Нельзя создать двух одинаковых курьеров")
     @allure.description("Проверка, что при попытке создать курьера с существующим логином возвращается ошибка 409")
@@ -123,12 +114,3 @@ class TestCourierCreate:
         response_data = response.json()
         assert response_data.get("ok") is True, \
             f"Ожидалось 'ok': true, получено {response_data}"
-        
-        # Удаляем созданного курьера
-        login_response = CourierAPI.login_courier({
-            "login": courier_data["login"],
-            "password": courier_data["password"]
-        })
-        if login_response.status_code == 200:
-            courier_id = login_response.json().get("id")
-            CourierAPI.delete_courier(courier_id)

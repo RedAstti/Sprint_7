@@ -89,10 +89,12 @@ class TestOrderList:
         assert page_info.get("limit") == 10, \
             f"Ожидался лимит 10, получен {page_info.get('limit')}"
 
-    @allure.title("Список заказов не пустой")
-    @allure.description("Проверка, что в системе есть заказы")
-    def test_orders_list_not_empty(self):
-        """Тест, что список заказов содержит данные"""
+    @allure.title("Список заказов содержит созданный заказ")
+    @allure.description("Проверка, что список заказов возвращает созданный заказ с корректной структурой")
+    def test_orders_list_contains_created_order(self, created_order):
+        """Тест, что список заказов содержит заказы с корректной структурой"""
+        order_data, track_number = created_order
+        
         response = OrdersAPI.get_orders_list()
         
         # Проверяем код ответа
@@ -103,12 +105,12 @@ class TestOrderList:
         response_data = response.json()
         orders = response_data.get("orders", [])
         
-        # Если заказов нет, это нормально для тестовой среды
-        # Проверяем только структуру
-        if len(orders) > 0:
-            # Проверяем структуру первого заказа
-            first_order = orders[0]
-            assert "id" in first_order, \
-                "В заказе отсутствует поле 'id'"
-            assert "track" in first_order, \
-                "В заказе отсутствует поле 'track'"
+        assert len(orders) > 0, \
+            "Список заказов не должен быть пустым"
+        
+        # Проверяем структуру первого заказа
+        first_order = orders[0]
+        assert "id" in first_order, \
+            "В заказе отсутствует поле 'id'"
+        assert "track" in first_order, \
+            "В заказе отсутствует поле 'track'"
